@@ -1,16 +1,9 @@
 using UnityEngine;
 
-public class PuzzleBox : MonoBehaviour
+public class PuzzleBox : MonoBehaviour, IInteractable
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void Interact()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Debug.Log("Has interactuado con el cofre.", this);
     }
 }

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef49e49c7160f374680733a4bc695282, type: 3}
+  m_Name: Note
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemName: Note
+  description: Note of the mother
+  inspectionPrefab: {fileID: 6312609898664583381, guid: ea21f41ff61f69449baaff0103cf6117, type: 3}
+  initialRotation: {x: 5, y: -5, z: 0}
