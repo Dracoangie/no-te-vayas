@@ -17,6 +17,17 @@ public class Player : MonoBehaviour
     private Vector2 movement;
     private float yaw;
     private float pitch;
+    private bool controlsEnabled = true;
+
+    public void SetControlsEnabled(bool value)
+    {
+        controlsEnabled = value;
+        movement = Vector2.zero;
+        UpdateCursor();
+
+        if (!value)
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+    }
 
     private void Awake()
     {
@@ -30,12 +41,32 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        UpdateCursor();
+    }
+
+    private void LateUpdate()
+    {
+        UpdateCursor();
+    }
+
+    private void UpdateCursor()
+    {
+        if (!Application.isFocused)
+            return;
+
+        CursorLockMode targetLock = controlsEnabled ? CursorLockMode.Locked : CursorLockMode.None;
+
+        if (Cursor.lockState != targetLock)
+            Cursor.lockState = targetLock;
+
+        Cursor.visible = !controlsEnabled;
     }
 
     private void Update()
     {
+        if (!controlsEnabled)
+            return;
+
         movement = Vector2.ClampMagnitude( movementAction.ReadValue<Vector2>(), 1f);
 
         if (Cursor.lockState != CursorLockMode.Locked)
@@ -51,6 +82,9 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!controlsEnabled)
+            return;
+
         Quaternion rotation = Quaternion.Euler(0f, yaw, 0f);
         rb.MoveRotation(rotation);
 
