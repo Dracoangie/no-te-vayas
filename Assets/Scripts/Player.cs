@@ -44,24 +44,6 @@ public class Player : MonoBehaviour
         UpdateCursor();
     }
 
-    private void LateUpdate()
-    {
-        UpdateCursor();
-    }
-
-    private void UpdateCursor()
-    {
-        if (!Application.isFocused)
-            return;
-
-        CursorLockMode targetLock = controlsEnabled ? CursorLockMode.Locked : CursorLockMode.None;
-
-        if (Cursor.lockState != targetLock)
-            Cursor.lockState = targetLock;
-
-        Cursor.visible = !controlsEnabled;
-    }
-
     private void Update()
     {
         if (!controlsEnabled)
@@ -76,8 +58,6 @@ public class Player : MonoBehaviour
         yaw += look.x * mouseSensitivity;
         pitch -= look.y * mouseSensitivity;
         pitch = Mathf.Clamp(pitch, -85f, 85f);
-
-        cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
     }
 
     private void FixedUpdate()
@@ -102,5 +82,27 @@ public class Player : MonoBehaviour
             acceleration * Time.fixedDeltaTime);
 
         rb.linearVelocity = new Vector3(horizontalVelocity.x, rb.linearVelocity.y, horizontalVelocity.z);
+    }
+    private void LateUpdate()
+    {
+        UpdateCursor();
+
+        if (!controlsEnabled)
+            return;
+
+        cameraPivot.rotation = Quaternion.Euler(pitch, yaw, 0f);
+    }
+
+    private void UpdateCursor()
+    {
+        if (!Application.isFocused)
+            return;
+
+        CursorLockMode targetLock = controlsEnabled ? CursorLockMode.Locked : CursorLockMode.None;
+
+        if (Cursor.lockState != targetLock)
+            Cursor.lockState = targetLock;
+
+        Cursor.visible = !controlsEnabled;
     }
 }
