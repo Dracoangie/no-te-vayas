@@ -8,7 +8,7 @@ public class InspectableObject : MonoBehaviour, IInteractable
     {
         if (InspectionController.Instance == null)
         {
-            Debug.LogWarning("No hay un visor de inspeccion disponible en la escena.", this);
+            Debug.LogWarning("No inspection viewer is available in the scene.", this);
             return;
         }
 

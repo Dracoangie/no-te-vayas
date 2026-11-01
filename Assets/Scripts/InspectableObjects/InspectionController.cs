@@ -29,7 +29,7 @@ public class InspectionController : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogError("Solo debe haber un InspectionController en la escena.", this);
+            Debug.LogError("The scene must contain only one InspectionController.", this);
             enabled = false;
             return;
         }
@@ -37,7 +37,7 @@ public class InspectionController : MonoBehaviour
         if (inspectionPanel == null || playerCamera == null || inspectionCamera == null ||
             inspectionImage == null || modelPivot == null || player == null)
         {
-            Debug.LogError("Asigna las referencias del visor en InspectionController.", this);
+            Debug.LogError("Assign all preview references in InspectionController.", this);
             enabled = false;
             return;
         }

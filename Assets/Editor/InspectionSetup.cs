@@ -7,18 +7,19 @@ using UnityEngine.UI;
 
 public static class InspectionSetup
 {
-    // The menu also lets the stage be added to another scene using this controller.
+    // Keep the controller and the preview environment under one root object.
     [MenuItem("Tools/Inspection/Configure current scene")]
     public static void ConfigureCurrentScene()
     {
         InspectionController controller = Object.FindFirstObjectByType<InspectionController>();
         if (controller == null)
-            throw new System.InvalidOperationException("La escena necesita un InspectionController.");
+            throw new System.InvalidOperationException("The scene needs an InspectionController.");
 
         SerializedObject settings = new SerializedObject(controller);
         if (settings.FindProperty("inspectionCamera").objectReferenceValue != null)
         {
-            Debug.Log("La camara de inspeccion ya esta configurada.", controller);
+            ConsolidateInspectionRoot(controller, (Camera)settings.FindProperty("inspectionCamera").objectReferenceValue);
+            Debug.Log("Inspection is already configured under InspectionSystem.", controller);
             return;
         }
 
@@ -28,10 +29,12 @@ public static class InspectionSetup
         GameObject panel = (GameObject)settings.FindProperty("inspectionPanel").objectReferenceValue;
         Transform pivot = (Transform)settings.FindProperty("modelPivot").objectReferenceValue;
 
-        GameObject stage = new GameObject("InspectionStage");
+        GameObject stage = controller.gameObject;
+        Undo.RecordObject(stage, "Configure inspection system");
+        Undo.RecordObject(stage.transform, "Position inspection system");
+        stage.name = "InspectionSystem";
         stage.transform.position = new Vector3(0f, -1000f, 0f);
         stage.layer = layer;
-        Undo.RegisterCreatedObjectUndo(stage, "Create inspection stage");
 
         GameObject cameraObject = new GameObject("InspectionCamera", typeof(Camera), typeof(HDAdditionalCameraData));
         cameraObject.transform.SetParent(stage.transform, false);
@@ -58,7 +61,10 @@ public static class InspectionSetup
         // Punctual lights have a short range, so they cannot light the playable scene.
         CreateLight(stage.transform, "Inspection Key", new Vector3(-0.8f, 0.8f, -0.4f), 12000f);
         CreateLight(stage.transform, "Inspection Fill", new Vector3(0.8f, -0.2f, 0f), 6000f);
-        Volume volume = stage.AddComponent<Volume>();
+        Volume volume = stage.GetComponent<Volume>();
+        if (volume == null)
+            volume = Undo.AddComponent<Volume>(stage);
+        Undo.RecordObject(volume, "Configure inspection volume");
         volume.isGlobal = true;
         volume.sharedProfile = GetVolumeProfile();
 
@@ -74,7 +80,7 @@ public static class InspectionSetup
         Undo.RecordObject(panelRect, "Stretch inspection panel");
         Stretch(panelRect);
 
-        Transform background = panel.transform.Find("BackGround");
+        Transform background = panel.transform.Find("Background") ?? panel.transform.Find("BackGround");
         if (background != null)
         {
             Undo.RecordObject(background.GetComponent<RectTransform>(), "Stretch background");
@@ -100,7 +106,46 @@ public static class InspectionSetup
         Undo.RecordObject(panel, "Hide inspection panel");
         panel.SetActive(false);
         EditorSceneManager.MarkSceneDirty(controller.gameObject.scene);
-        Debug.Log("Inspeccion configurada: camara separada, RawImage, luces y volumen HDRP.", controller);
+        Debug.Log("Inspection configured: preview camera, RawImage, lights and HDRP volume under InspectionSystem.", controller);
+    }
+
+    private static void ConsolidateInspectionRoot(InspectionController controller, Camera camera)
+    {
+        GameObject system = controller.gameObject;
+        Transform stage = camera.transform.parent;
+        if (stage == system.transform)
+        {
+            Undo.RecordObject(system, "Name inspection system");
+            system.name = "InspectionSystem";
+            return;
+        }
+
+        Volume stageVolume = stage != null ? stage.GetComponent<Volume>() : null;
+        if (stageVolume == null || stage.name != "InspectionStage")
+            throw new System.InvalidOperationException("The preview camera must belong to InspectionStage or InspectionSystem.");
+
+        Undo.RecordObject(system, "Merge inspection system");
+        Undo.RecordObject(system.transform, "Position inspection system");
+        system.name = "InspectionSystem";
+        system.layer = stage.gameObject.layer;
+        system.transform.SetPositionAndRotation(stage.position, stage.rotation);
+        system.transform.localScale = stage.localScale;
+
+        Volume systemVolume = system.GetComponent<Volume>();
+        if (systemVolume == null)
+            systemVolume = Undo.AddComponent<Volume>(system);
+        Undo.RecordObject(systemVolume, "Merge inspection volume");
+        systemVolume.enabled = stageVolume.enabled;
+        systemVolume.isGlobal = stageVolume.isGlobal;
+        systemVolume.priority = stageVolume.priority;
+        systemVolume.blendDistance = stageVolume.blendDistance;
+        systemVolume.weight = stageVolume.weight;
+        systemVolume.sharedProfile = stageVolume.sharedProfile;
+
+        while (stage.childCount > 0)
+            Undo.SetTransformParent(stage.GetChild(0), system.transform, "Move inspection child");
+        Undo.DestroyObjectImmediate(stage.gameObject);
+        EditorSceneManager.MarkSceneDirty(system.scene);
     }
 
     public static void ConfigureProjectScene()
@@ -127,7 +172,7 @@ public static class InspectionSetup
             tags.ApplyModifiedProperties();
             return i;
         }
-        throw new System.InvalidOperationException("No queda ninguna capa libre para Inspection.");
+        throw new System.InvalidOperationException("No free layer is available for Inspection.");
     }
 
     private static VolumeProfile GetVolumeProfile()

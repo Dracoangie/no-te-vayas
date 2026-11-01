@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ef49e49c7160f374680733a4bc695282, type: 3}
-  m_Name: Coffer
+  m_Name: Note
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
-  itemName: Coffer
-  description: Coffer with the key of the house
-  inspectionPrefab: {fileID: 3237392860107856009, guid: c09d499f46fb35146aa26b7364593597, type: 3}
-  initialRotation: {x: 45, y: 25, z: 0}
+  itemName: Nota
+  description: Nota de tu madre.
+  inspectionPrefab: {fileID: 6312609898664583381, guid: ea21f41ff61f69449baaff0103cf6117, type: 3}
+  initialRotation: {x: 5, y: -5, z: 0}

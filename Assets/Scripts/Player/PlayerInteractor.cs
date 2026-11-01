@@ -15,7 +15,7 @@ public class PlayerInteractor : MonoBehaviour
 
         if (playerCamera == null)
         {
-            Debug.LogError("Asigna la camara del jugador en PlayerInteractor.", this);
+            Debug.LogError("Assign the player camera in PlayerInteractor.", this);
             enabled = false;
         }
     }
