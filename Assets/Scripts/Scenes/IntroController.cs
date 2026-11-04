@@ -10,12 +10,12 @@ public sealed class IntroController : MonoBehaviour
     [SerializeField] private CanvasGroup content;
     [SerializeField] private CanvasGroup fade;
     [SerializeField] private Button enterButton;
-    [SerializeField] private Text loadingLabel;
+    [SerializeField] private Animator doorwayAnimator;
     [SerializeField, Min(0.01f)] private float revealDuration = 1.4f;
-    [SerializeField, Min(0.01f)] private float transitionDuration = 0.9f;
 
     private bool ready;
     private bool transitioning;
+    private bool animationFinished;
 
     private IEnumerator Start()
     {
@@ -25,7 +25,6 @@ public sealed class IntroController : MonoBehaviour
         content.alpha = 0f;
         fade.alpha = 1f;
         fade.blocksRaycasts = true;
-        loadingLabel.gameObject.SetActive(false);
 
         yield return Fade(1f, 0f, revealDuration, true);
 
@@ -56,18 +55,34 @@ public sealed class IntroController : MonoBehaviour
         if (!ready || transitioning)
             return;
 
-        if (!Application.CanStreamedLevelBeLoaded(nextScene))
-        {
-            Debug.LogError($"Add the {nextScene} scene to the Build Profiles scene list.", this);
-            return;
-        }
-
         transitioning = true;
         enterButton.interactable = false;
         content.blocksRaycasts = false;
         fade.blocksRaycasts = true;
+
+        CameraSway cameraSway = doorwayAnimator.GetComponentInChildren<CameraSway>();
+        if (cameraSway != null)
+            cameraSway.enabled = false;
+
+        doorwayAnimator.updateMode = AnimatorUpdateMode.UnscaledTime;
+        doorwayAnimator.SetTrigger("StartGame");
         DontDestroyOnLoad(gameObject);
+        StartCoroutine(contentFade());
         StartCoroutine(LoadHouse());
+    }
+
+    private IEnumerator contentFade()
+    {
+        float elapsed = 0f;
+        while (elapsed < 0.5f)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / 0.5f));
+            content.alpha = 1f - progress;
+            yield return null;
+        }
+        content.alpha = 0f;
+        content.gameObject.SetActive(false);
     }
 
     private IEnumerator LoadHouse()
@@ -75,9 +90,13 @@ public sealed class IntroController : MonoBehaviour
         AsyncOperation loading = SceneManager.LoadSceneAsync(nextScene, LoadSceneMode.Single);
         loading.allowSceneActivation = false;
 
-        yield return Fade(0f, 1f, transitionDuration);
-        content.gameObject.SetActive(false);
-        loadingLabel.gameObject.SetActive(true);
+        while (!animationFinished)
+        {
+            AnimatorStateInfo state = doorwayAnimator.GetCurrentAnimatorStateInfo(0);
+            if (state.IsName("IntroAnim"))
+                fade.alpha = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(state.normalizedTime));
+            yield return null;
+        }
 
         while (loading.progress < 0.9f)
             yield return null;
@@ -86,9 +105,17 @@ public sealed class IntroController : MonoBehaviour
         while (!loading.isDone)
             yield return null;
 
-        loadingLabel.gameObject.SetActive(false);
-        yield return Fade(1f, 0f, transitionDuration);
+        yield return Fade(1f, 0f, revealDuration);
         Destroy(gameObject);
+    }
+
+    public void FinishIntro()
+    {
+        if (!transitioning)
+            return;
+
+        fade.alpha = 1f;
+        animationFinished = true;
     }
 
     private IEnumerator Fade(float from, float to, float duration, bool revealContent = false)
