@@ -6,7 +6,7 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private Camera playerCamera;
     [SerializeField, Min(0.1f)] private float interactionDistance = 3f;
     [SerializeField] private LayerMask interactionLayers = Physics.DefaultRaycastLayers;
-    [SerializeField] private GameObject interactionPanel;
+    private GameObject interactionPanel;
 
     private InputAction interactionAction;
     private Player player;
@@ -21,6 +21,13 @@ public class PlayerInteractor : MonoBehaviour
             Debug.LogError("Assign the player camera in PlayerInteractor.", this);
             enabled = false;
         }
+    }
+
+    private void Start()
+    {
+        interactionPanel = GameObject.Find("Interaction Panel");
+        if (interactionPanel != null)
+            interactionPanel.SetActive(false);
     }
 
     private void Update()

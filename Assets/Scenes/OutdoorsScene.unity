@@ -11772,10 +11772,6 @@ PrefabInstance:
       propertyPath: m_CullingMask.m_Bits
       value: 4294967039
       objectReference: {fileID: 0}
-    - target: {fileID: 3258337834226455902, guid: 3414a58a8c481834abcb2bab3cba39f9, type: 3}
-      propertyPath: interactionPanel
-      value: 
-      objectReference: {fileID: 304474684}
     - target: {fileID: 3532429279367210331, guid: 3414a58a8c481834abcb2bab3cba39f9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.31761
