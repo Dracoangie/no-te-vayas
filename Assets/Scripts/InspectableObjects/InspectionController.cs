@@ -7,11 +7,9 @@ public class InspectionController : MonoBehaviour
     public static InspectionController Instance { get; private set; }
 
     [SerializeField] private GameObject inspectionPanel;
-    [SerializeField] private Camera playerCamera;
     [SerializeField] private Camera inspectionCamera;
     [SerializeField] private RawImage inspectionImage;
     [SerializeField] private Transform modelPivot;
-    [SerializeField] private Player player;
     [SerializeField] private float rotationSpeed = 0.2f;
     [SerializeField] private float zoomSpeed = 0.002f;
     [SerializeField] private float initialDistance = 0.7f;
@@ -21,6 +19,7 @@ public class InspectionController : MonoBehaviour
     [SerializeField, Min(0.01f)] private float modelRadius = 0.18f;
 
     private GameObject currentModel;
+    private Player player;
     private RenderTexture inspectionTexture;
     private bool isOpen;
     private float distance;
@@ -34,8 +33,16 @@ public class InspectionController : MonoBehaviour
             return;
         }
 
-        if (inspectionPanel == null || playerCamera == null || inspectionCamera == null ||
-            inspectionImage == null || modelPivot == null || player == null)
+        player = FindFirstObjectByType<Player>();
+        if (player == null)
+        {
+            Debug.LogError("The scene must contain a Player for inspection.", this);
+            enabled = false;
+            return;
+        }
+
+        if (inspectionPanel == null || inspectionCamera == null ||
+            inspectionImage == null || modelPivot == null)
         {
             Debug.LogError("Assign all preview references in InspectionController.", this);
             enabled = false;
