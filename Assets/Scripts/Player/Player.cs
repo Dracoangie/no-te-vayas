@@ -19,6 +19,8 @@ public class Player : MonoBehaviour
     private float pitch;
     private bool controlsEnabled = true;
 
+    public bool ControlsEnabled => controlsEnabled;
+
     public void SetControlsEnabled(bool value)
     {
         controlsEnabled = value;
