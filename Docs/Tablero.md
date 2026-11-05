@@ -19,7 +19,6 @@ No mantuve un tablero inicial. Esta lista está reconstruida el **5 de noviembre
 | H09 | Pausa y recarga de escena | P0 | No registrada | H02 | Menús y funciones implementados; reinicio probado por la autora en build |
 | H10 | Balanceo y pasos al caminar | P1 | No registrada | H02, H07 | Efectos activados por movimiento y detenidos al parar o bloquear controles |
 | H11 | Completar una partida y probar el reinicio en build | P0 | No registrada | H01-H09 | La autora ha completado una partida y probado el reinicio en la build definitiva |
-
 | H12 | Preparar el medio de entrega de la build definitiva | P0 | No registrada | H11 | [Release v1.0.0](https://github.com/Dracoangie/no-te-vayas/releases/tag/v1.0.0), ZIP íntegro, arranque de copia extraída y enlace desde README |
 
 ## En curso
