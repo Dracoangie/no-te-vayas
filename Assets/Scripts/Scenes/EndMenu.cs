@@ -5,6 +5,7 @@ using System.Collections;
 
 public class EndMenu : MonoBehaviour
 {
+    // Fades to the ending menu and handles restart or exit.
     [SerializeField] private GameObject endPanel;
     [SerializeField] private GameObject retryButton;
     [SerializeField] private PauseMenu pauseMenu;

@@ -2,10 +2,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 
-// Se comprueba Escape antes de que la inspeccion cierre su panel.
 [DefaultExecutionOrder(-10)]
 public class PauseMenu : MonoBehaviour
 {
+    // Pauses and resumes the game.
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject resumeButton;
     private Player player;

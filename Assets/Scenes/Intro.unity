@@ -5987,7 +5987,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 491633708}
         m_TargetAssemblyTypeName: IntroController, Assembly-CSharp
-        m_MethodName: EnterHouse
+        m_MethodName: SalirDelJuego
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

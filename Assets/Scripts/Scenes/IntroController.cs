@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public sealed class IntroController : MonoBehaviour
 {
+    // Handles the intro sequence and loads the game scene.
     [SerializeField] private string nextScene = "NightHouse";
     [SerializeField] private CanvasGroup content;
     [SerializeField] private CanvasGroup fade;
@@ -48,6 +49,14 @@ public sealed class IntroController : MonoBehaviour
 
         if (keyboardStart || gamepadStart)
             EnterHouse();
+    }
+
+    public void SalirDelJuego()
+    {
+        Application.Quit();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 
     public void EnterHouse()

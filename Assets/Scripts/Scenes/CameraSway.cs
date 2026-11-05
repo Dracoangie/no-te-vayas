@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class CameraSway : MonoBehaviour
 {
+    // Adds gentle movement and rotation to the camera.
     [SerializeField] private float speed = 0.4f;
     [SerializeField] private float movement = 0.015f;
     [SerializeField] private float rotation = 0.3f;
