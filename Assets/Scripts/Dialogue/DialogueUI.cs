@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class DialogueUI : MonoBehaviour
 {
+    // Displays queued dialogue with fade effects.
     [SerializeField] private CanvasGroup dialogueGroup;
     [SerializeField] private Text dialogueLabel;
     [SerializeField, Min(0.1f)] private float fadeSpeed = 5f;

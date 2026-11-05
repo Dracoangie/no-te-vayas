@@ -4,7 +4,7 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class SoundEvent : MonoBehaviour
 {
-    // Estas funciones se pueden seleccionar desde cualquier UnityEvent.
+    // Plays and stops sounds through Unity events.
     public void Play()
     {
         AudioSource source = GetComponent<AudioSource>();

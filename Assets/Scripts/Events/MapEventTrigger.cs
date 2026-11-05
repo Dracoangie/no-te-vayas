@@ -4,6 +4,7 @@ using UnityEngine.Events;
 [RequireComponent(typeof(BoxCollider))]
 public class MapEventTrigger : MonoBehaviour
 {
+    // Runs configured events when the player enters a trigger.
     [SerializeField] private bool triggerOnce = true;
     [SerializeField] private UnityEvent onTriggered = new UnityEvent();
 

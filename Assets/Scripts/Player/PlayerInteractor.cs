@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerInteractor : MonoBehaviour
 {
+    // Finds nearby objects and handles player interaction.
     [SerializeField] private Camera playerCamera;
     [SerializeField, Min(0.1f)] private float interactionDistance = 3f;
     [SerializeField] private LayerMask interactionLayers = Physics.DefaultRaycastLayers;

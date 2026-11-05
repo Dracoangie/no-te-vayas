@@ -5,6 +5,7 @@ using UnityEngine.Events;
 [RequireComponent(typeof(Rigidbody))]
 public class Player : MonoBehaviour
 {
+    // Handles player movement, camera effects and ending drag.
     [SerializeField] private float speed = 4f;
     [SerializeField, Min(0.01f)] private float accelerationTime = 0.25f;
     [SerializeField, Min(0.01f)] private float decelerationTime = 0.15f;
@@ -222,7 +223,10 @@ public class Player : MonoBehaviour
         if (!Application.isFocused)
             return;
 
-        CursorLockMode targetLock = controlsEnabled || dragging ? CursorLockMode.Locked : CursorLockMode.None;
+        CursorLockMode targetLock = CursorLockMode.None;
+
+        if (controlsEnabled || dragging)
+            targetLock = CursorLockMode.Locked;
 
         if (Cursor.lockState != targetLock)
             Cursor.lockState = targetLock;

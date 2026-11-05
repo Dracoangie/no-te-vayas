@@ -4,6 +4,7 @@ using UnityEngine.Events;
 [RequireComponent(typeof(BoxCollider))]
 public class DialogueTrigger : MonoBehaviour
 {
+    // Triggers dialogue when the player enters or an event calls it.
     [SerializeField, TextArea] private string dialogue;
     [SerializeField, Min(0.1f)] private float duration = 4f;
     [SerializeField] private bool showOnce = true;
