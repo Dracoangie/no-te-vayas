@@ -67,6 +67,8 @@ public class InspectionController : MonoBehaviour
 
         modelPivot.rotation = inspectionCamera.transform.rotation;
         currentModel = Instantiate(item.InspectionPrefab, modelPivot);
+        if (currentModel.TryGetComponent(out ItemDescriptionText text))
+            text.SetItem(item);
         currentModel.transform.localPosition = Vector3.zero;
         currentModel.transform.localRotation = Quaternion.Euler(item.InitialRotation);
         PrepareModel();
