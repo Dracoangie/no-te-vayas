@@ -57,6 +57,6 @@ No las presento como fuentes de uso libre o comercial sin tener esa información
 - **Unity 6000.3.7f1 y C#:** escenas, prefabs, materiales, interfaces, lógica y build.
 - **Unity Input System y UGUI:** entradas del jugador e interfaz.
 - **Git:** historial y agrupación de cambios por funcionalidad. Los commits agrupados no se usan para deducir horas de trabajo.
-- **Codex, de OpenAI:** apoyo durante la implementación y revisión de interacción, caja, eventos, sonido, recogida, final, efectos de caminata, organización de commits y documentación. También se utilizó para importar/preparar recursos y hacer comprobaciones aisladas.
+- **Codex, de OpenAI:** se utilizó como apoyo durante la implementación y para la revisión.
 
 Los iconos y el modelo de la llave son recursos externos, no dibujos o modelos originales generados para este proyecto por la IA. La documentación se ha contrastado con los archivos actuales y con el enunciado. Las horas, pruebas con otras personas y licencias que no se puedan comprobar se consultan a la autora en lugar de inventarlas.
