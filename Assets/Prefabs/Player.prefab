@@ -426,6 +426,11 @@ MonoBehaviour:
   decelerationTime: 0.15
   mouseSensitivity: 0.1
   cameraPivot: {fileID: 2738571906909203793}
+  dragTarget: {fileID: 0}
+  dragDuration: 2.8
+  onDragFinished:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &3258337834226455902
 MonoBehaviour:
   m_ObjectHideFlags: 0

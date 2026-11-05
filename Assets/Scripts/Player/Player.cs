@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Player : MonoBehaviour
@@ -9,6 +10,10 @@ public class Player : MonoBehaviour
     [SerializeField, Min(0.01f)] private float decelerationTime = 0.15f;
     [SerializeField] private float mouseSensitivity = 0.1f;
     [SerializeField] private Transform cameraPivot;
+    [Header("Final")]
+    [SerializeField] private Transform dragTarget;
+    [SerializeField, Min(0.01f)] private float dragDuration = 2.8f;
+    [SerializeField] private UnityEvent onDragFinished = new UnityEvent();
 
     private Rigidbody rb;
     private InputAction movementAction;
@@ -18,6 +23,12 @@ public class Player : MonoBehaviour
     private float yaw;
     private float pitch;
     private bool controlsEnabled = true;
+    private bool dragging;
+    private bool dragStarted;
+    private bool wasKinematic;
+    private Vector3 dragStart;
+    private Vector3 dragEnd;
+    private float dragElapsed;
 
     public bool ControlsEnabled => controlsEnabled;
 
@@ -27,14 +38,45 @@ public class Player : MonoBehaviour
         movement = Vector2.zero;
         UpdateCursor();
 
-        if (!value)
+        if (!value && !rb.isKinematic)
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+    }
+
+    public void ArrastrarAlSalon()
+    {
+        if (dragStarted || dragTarget == null)
+            return;
+
+        if (InspectionController.Instance != null)
+            InspectionController.Instance.Close();
+        SetControlsEnabled(false);
+        dragStarted = true;
+        dragging = true;
+        dragElapsed = 0f;
+        dragStart = rb.position;
+        dragEnd = dragTarget.position;
+        dragEnd.y = dragStart.y;
+        wasKinematic = rb.isKinematic;
+        rb.isKinematic = true;
+    }
+
+    public void StopDragging()
+    {
+        if (!dragging)
+            return;
+        dragging = false;
+        rb.isKinematic = wasKinematic;
+        if (!rb.isKinematic)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
     }
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-                
+
         movementAction = InputSystem.actions.FindAction("InGame/Movement", true);
         cameraAction = InputSystem.actions.FindAction("InGame/Camera", true);
 
@@ -64,6 +106,20 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (dragging)
+        {
+            dragElapsed += Time.fixedDeltaTime;
+            float progress = Mathf.Clamp01(dragElapsed / Mathf.Max(0.01f, dragDuration));
+            rb.MovePosition(Vector3.Lerp(dragStart, dragEnd, Mathf.SmoothStep(0f, 1f, progress)));
+            if (progress >= 1f)
+            {
+                rb.position = dragEnd;
+                StopDragging();
+                onDragFinished.Invoke();
+            }
+            return;
+        }
+
         if (!controlsEnabled)
             return;
 
@@ -100,11 +156,13 @@ public class Player : MonoBehaviour
         if (!Application.isFocused)
             return;
 
-        CursorLockMode targetLock = controlsEnabled ? CursorLockMode.Locked : CursorLockMode.None;
+        CursorLockMode targetLock = controlsEnabled || dragging ? CursorLockMode.Locked : CursorLockMode.None;
 
         if (Cursor.lockState != targetLock)
             Cursor.lockState = targetLock;
 
-        Cursor.visible = !controlsEnabled;
+        Cursor.visible = !controlsEnabled && !dragging;
     }
+
+    private void OnDisable() => StopDragging();
 }
