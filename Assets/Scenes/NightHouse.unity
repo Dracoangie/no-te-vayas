@@ -1941,7 +1941,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1974884814}
   - {fileID: 342871881}
   - {fileID: 1894665332}
   - {fileID: 1899856455}
@@ -2130,7 +2129,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3268851697932907501, guid: ff8b2cab888398549ba597fd3b05c7a1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 5.75
+      value: 5.698
       objectReference: {fileID: 0}
     - target: {fileID: 3268851697932907501, guid: ff8b2cab888398549ba597fd3b05c7a1, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4635,7 +4634,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1347725118912013667, guid: fb9c16f1274b5d347b89380f3ae9e7ac, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.1
+      value: 7.763
       objectReference: {fileID: 0}
     - target: {fileID: 1347725118912013667, guid: fb9c16f1274b5d347b89380f3ae9e7ac, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5590,7 +5589,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5497928691020280815, guid: 9633f5c67a0dd0548b28fba4230056da, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6.25
+      value: 6.913
       objectReference: {fileID: 0}
     - target: {fileID: 5497928691020280815, guid: 9633f5c67a0dd0548b28fba4230056da, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7622,7 +7621,7 @@ Transform:
   m_GameObject: {fileID: 732176142}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.2629998, z: 3.066}
+  m_LocalPosition: {x: 0, y: 2.16, z: 3.066}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7781,8 +7780,8 @@ Light:
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 1, g: 0.74, b: 0.47, a: 1}
-  m_Intensity: 20
-  m_Range: 4.4
+  m_Intensity: 60
+  m_Range: 2.4
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -8613,7 +8612,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4998100009014927174, guid: 6fe104c4c232a1e4c80a7ae18af68e3e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.233
+      value: 2.917
       objectReference: {fileID: 0}
     - target: {fileID: 4998100009014927174, guid: 6fe104c4c232a1e4c80a7ae18af68e3e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -18067,7 +18066,7 @@ Transform:
   m_GameObject: {fileID: 1942895970}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.2629998, z: 7.591}
+  m_LocalPosition: {x: 0, y: 1.81, z: 7.591}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -18226,8 +18225,8 @@ Light:
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 1, g: 0.74, b: 0.47, a: 1}
-  m_Intensity: 20
-  m_Range: 4.4
+  m_Intensity: 60
+  m_Range: 2.5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -18557,37 +18556,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1970904845}
   m_Mesh: {fileID: -6057175885687460503, guid: c0fbf53605a1d574aa6a6a7cf4fd2e67, type: 3}
---- !u!1 &1974884813
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1974884814}
-  m_Layer: 0
-  m_Name: Refrigerator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1974884814
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1974884813}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.3}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 224234661}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1984176260
 GameObject:
   m_ObjectHideFlags: 0
