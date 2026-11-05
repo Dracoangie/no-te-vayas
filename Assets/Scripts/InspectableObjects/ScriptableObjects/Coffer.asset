@@ -15,4 +15,4 @@ MonoBehaviour:
   itemName: Cofre
   description: Cofre con la llave de la casa.
   inspectionPrefab: {fileID: 3237392860107856009, guid: c09d499f46fb35146aa26b7364593597, type: 3}
-  initialRotation: {x: 45, y: 25, z: 0}
+  initialRotation: {x: 5, y: 90, z: -20}

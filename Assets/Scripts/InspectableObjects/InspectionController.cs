@@ -18,10 +18,14 @@ public class InspectionController : MonoBehaviour
     [SerializeField, Min(128)] private int textureSize = 1024;
     [SerializeField, Min(0.01f)] private float modelRadius = 0.18f;
 
-    private GameObject currentModel;
+    private GameObject model;
+    private CofferLock coffer;
+    private CofferLock preview;
     private Player player;
-    private RenderTexture inspectionTexture;
+    private RenderTexture texture;
     private bool isOpen;
+    private Vector2 clickStart;
+    private bool isClick;
     private float distance;
 
     private void Awake()
@@ -50,31 +54,36 @@ public class InspectionController : MonoBehaviour
         }
 
         Instance = this;
-        inspectionTexture = new RenderTexture(textureSize, textureSize, 24, RenderTextureFormat.ARGBHalf);
-        inspectionTexture.name = "Inspection Preview";
-        inspectionTexture.Create();
-        inspectionCamera.targetTexture = inspectionTexture;
+        texture = new RenderTexture(textureSize, textureSize, 24, RenderTextureFormat.ARGBHalf);
+        texture.name = "Inspection Preview";
+        texture.Create();
+        inspectionCamera.targetTexture = texture;
         inspectionCamera.aspect = 1f;
-        inspectionImage.texture = inspectionTexture;
+        inspectionImage.texture = texture;
         inspectionCamera.enabled = false;
         inspectionPanel.SetActive(false);
     }
 
-    public void Open(ItemDefinition item)
+    public void Open(ItemDefinition item, CofferLock cofferLock = null)
     {
         if (!isActiveAndEnabled || isOpen || item == null || item.InspectionPrefab == null)
             return;
 
         modelPivot.rotation = inspectionCamera.transform.rotation;
-        currentModel = Instantiate(item.InspectionPrefab, modelPivot);
-        if (currentModel.TryGetComponent(out ItemDescriptionText text))
+        coffer = cofferLock;
+        isClick = false;
+        model = Instantiate(item.InspectionPrefab, modelPivot);
+        if (model.TryGetComponent(out ItemDescriptionText text))
             text.SetItem(item);
-        currentModel.transform.localPosition = Vector3.zero;
-        currentModel.transform.localRotation = Quaternion.Euler(item.InitialRotation);
-        PrepareModel();
+        preview = model.GetComponent<CofferLock>();
+        if (preview != null)
+            preview.PreparePreview(coffer);
+        model.transform.localPosition = Vector3.zero;
+        model.transform.localRotation = Quaternion.Euler(item.InitialRotation);
+        SetupModel();
 
         distance = Mathf.Clamp(initialDistance, minDistance, maxDistance);
-        UpdateModelPosition();
+        MoveModel();
 
         player.SetControlsEnabled(false);
 
@@ -83,34 +92,32 @@ public class InspectionController : MonoBehaviour
         isOpen = true;
     }
 
-    private void PrepareModel()
+    private void SetupModel()
     {
-        // Only the preview camera sees this copy, including meshes in child objects.
-        foreach (Transform child in currentModel.GetComponentsInChildren<Transform>(true))
+        foreach (Transform child in model.GetComponentsInChildren<Transform>(true))
             child.gameObject.layer = inspectionCamera.gameObject.layer;
 
-        foreach (Collider collider in currentModel.GetComponentsInChildren<Collider>(true))
-            collider.enabled = false;
+        foreach (Collider collider in model.GetComponentsInChildren<Collider>(true))
+            collider.enabled = preview != null && collider is MeshCollider;
 
-        foreach (Rigidbody body in currentModel.GetComponentsInChildren<Rigidbody>(true))
+        foreach (Rigidbody body in model.GetComponentsInChildren<Rigidbody>(true))
         {
             body.isKinematic = true;
             body.detectCollisions = false;
         }
 
-        Renderer[] renderers = currentModel.GetComponentsInChildren<Renderer>();
+        Renderer[] renderers = model.GetComponentsInChildren<Renderer>();
         if (renderers.Length == 0)
             return;
 
         Bounds bounds = renderers[0].bounds;
-        foreach (Renderer renderer in renderers)
-            bounds.Encapsulate(renderer.bounds);
+        for (int i = 1; i < renderers.Length; i++)
+            bounds.Encapsulate(renderers[i].bounds);
 
-        // Center the mesh rather than assuming its imported pivot is centered.
         float scale = modelRadius / Mathf.Max(bounds.extents.magnitude, 0.001f);
-        Vector3 centerOffset = bounds.center - modelPivot.position;
-        currentModel.transform.localScale *= scale;
-        currentModel.transform.position = modelPivot.position - centerOffset * scale;
+        Vector3 offset = bounds.center - modelPivot.position;
+        model.transform.localScale *= scale;
+        model.transform.position = modelPivot.position - offset * scale;
     }
 
     private void Update()
@@ -118,15 +125,41 @@ public class InspectionController : MonoBehaviour
         if (!isOpen)
             return;
 
+        bool lockPanelOpen = preview != null && preview.IsPanelOpen;
+
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            Close();
+            if (lockPanelOpen)
+                preview.SetPanelOpen(false);
+            else
+                Close();
             return;
         }
 
         Mouse mouse = Mouse.current;
         if (mouse == null)
             return;
+
+        if (lockPanelOpen)
+            return;
+
+        Vector2 pointer = mouse.position.ReadValue();
+        if (mouse.leftButton.wasPressedThisFrame)
+        {
+            clickStart = pointer;
+            isClick = true;
+        }
+        if (isClick && Vector2.Distance(pointer, clickStart) > 6f)
+            isClick = false;
+        if (mouse.leftButton.wasReleasedThisFrame)
+        {
+            bool clicked = isClick;
+            isClick = false;
+            if (clicked && CheckClick(pointer))
+            {
+                return;
+            }
+        }
 
         if (mouse.leftButton.isPressed)
         {
@@ -142,11 +175,32 @@ public class InspectionController : MonoBehaviour
     private void LateUpdate()
     {
         if (isOpen)
-            UpdateModelPosition();
-
+            MoveModel();
     }
 
-    private void UpdateModelPosition()
+    private bool CheckClick(Vector2 screenPoint)
+    {
+        if (coffer == null || preview == null)
+            return false;
+
+        Canvas canvas = inspectionImage.canvas;
+        Camera uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera : null;
+        RectTransform imageRect = inspectionImage.rectTransform;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(imageRect, screenPoint,
+            uiCamera, out Vector2 localPoint) || !imageRect.rect.Contains(localPoint))
+            return false;
+
+        Rect rect = imageRect.rect;
+        Rect uv = inspectionImage.uvRect;
+        Vector2 viewport = new Vector2(
+            uv.x + (localPoint.x - rect.x) / rect.width * uv.width,
+            uv.y + (localPoint.y - rect.y) / rect.height * uv.height);
+        Ray ray = inspectionCamera.ViewportPointToRay(viewport);
+        return preview.InteractWithPreview(ray);
+    }
+
+    private void MoveModel()
     {
         modelPivot.position = inspectionCamera.transform.position + inspectionCamera.transform.forward * distance;
     }
@@ -156,7 +210,10 @@ public class InspectionController : MonoBehaviour
         if (!isOpen)
             return;
 
-        Destroy(currentModel);
+        Destroy(model);
+        coffer = null;
+        preview = null;
+        isClick = false;
         inspectionCamera.enabled = false;
         inspectionPanel.SetActive(false);
         player.SetControlsEnabled(true);
@@ -170,14 +227,14 @@ public class InspectionController : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (inspectionTexture != null)
+        if (texture != null)
         {
             if (inspectionCamera != null)
                 inspectionCamera.targetTexture = null;
             if (inspectionImage != null)
                 inspectionImage.texture = null;
-            inspectionTexture.Release();
-            Destroy(inspectionTexture);
+            texture.Release();
+            Destroy(texture);
         }
 
         if (Instance == this)
