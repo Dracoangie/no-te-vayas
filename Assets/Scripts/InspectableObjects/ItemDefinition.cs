@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewItem", menuName = "Inspection/Item")]
 public class ItemDefinition : ScriptableObject
 {
+    // Stores an item's description and inspection settings.
     [SerializeField] private string itemName;
     [SerializeField, TextArea] private string description;
     [SerializeField] private GameObject inspectionPrefab;

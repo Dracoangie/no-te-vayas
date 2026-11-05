@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class CofferLock : MonoBehaviour, IInteractable
 {
+    // Handles the coffer puzzle, lid and key pickup.
     [SerializeField] private ItemDefinition item;
     [SerializeField] private Vector3Int combination = new Vector3Int(0, 1, 2);
     [SerializeField] private Texture2D[] images;
@@ -26,15 +27,50 @@ public class CofferLock : MonoBehaviour, IInteractable
     private bool thirdWheelEnabled;
     private bool keyCollected;
     private Vector3 closedLidPosition;
-    private CofferLock State => source != null ? source : this;
-    public bool IsUnlocked => State.unlocked;
-    public bool IsKeyCollected => State.keyCollected;
-    public bool IsPanelOpen => lockPanel != null && lockPanel.activeSelf;
+
+    private CofferLock State
+    {
+        get
+        {
+            if (source != null)
+                return source;
+
+            return this;
+        }
+    }
+
+    public bool IsUnlocked
+    {
+        get
+        {
+            return State.unlocked;
+        }
+    }
+
+    public bool IsKeyCollected
+    {
+        get
+        {
+            return State.keyCollected;
+        }
+    }
+
+    public bool IsPanelOpen
+    {
+        get
+        {
+            if (lockPanel == null)
+                return false;
+
+            return lockPanel.activeSelf;
+        }
+    }
 
     private void Awake()
     {
         if (lid != null)
             closedLidPosition = lid.localPosition;
+
         SetPanelOpen(false);
         UpdateWheel();
         UpdateContents(true);
@@ -44,6 +80,7 @@ public class CofferLock : MonoBehaviour, IInteractable
     {
         if (source != null)
             UpdateWheel();
+
         UpdateContents();
     }
 
@@ -51,12 +88,28 @@ public class CofferLock : MonoBehaviour, IInteractable
     {
         if (lid != null)
         {
-            Vector3 target = closedLidPosition + (IsUnlocked ? lidOpenOffset : Vector3.zero);
-            lid.localPosition = snap ? target
-                : Vector3.MoveTowards(lid.localPosition, target, lidSpeed * Time.deltaTime);
+            Vector3 target = closedLidPosition;
+
+            if (IsUnlocked)
+                target = closedLidPosition + lidOpenOffset;
+
+            if (snap)
+                lid.localPosition = target;
+            else
+            {
+                float step = lidSpeed * Time.deltaTime;
+                lid.localPosition = Vector3.MoveTowards(
+                    lid.localPosition, target, step);
+            }
         }
+
         if (keyModel != null)
-            keyModel.SetActive(IsUnlocked && !IsKeyCollected);
+        {
+            if (IsUnlocked && !IsKeyCollected)
+                keyModel.SetActive(true);
+            else
+                keyModel.SetActive(false);
+        }
     }
 
     public void CollectKey()
@@ -80,15 +133,28 @@ public class CofferLock : MonoBehaviour, IInteractable
     private void UpdateWheel()
     {
         bool active = State.thirdWheelEnabled;
+
         if (thirdWheel != null)
             thirdWheel.SetActive(active);
+
         if (blockedThirdWheel != null)
             blockedThirdWheel.SetActive(!active);
     }
 
-    public void PreviousImage(int wheel) => MoveWheel(wheel, -1);
-    public void NextImage(int wheel) => MoveWheel(wheel, 1);
-    public void ClosePanel() => SetPanelOpen(false);
+    public void PreviousImage(int wheel)
+    {
+        MoveWheel(wheel, -1);
+    }
+
+    public void NextImage(int wheel)
+    {
+        MoveWheel(wheel, 1);
+    }
+
+    public void ClosePanel()
+    {
+        SetPanelOpen(false);
+    }
 
     public void Interact()
     {
@@ -111,7 +177,9 @@ public class CofferLock : MonoBehaviour, IInteractable
     {
         if (lockPanel == null)
             return;
+
         lockPanel.SetActive(open);
+
         if (open)
         {
             UpdateImages();
@@ -127,30 +195,41 @@ public class CofferLock : MonoBehaviour, IInteractable
 
     private void MoveWheel(int wheel, int direction)
     {
-        if (wheel < 0 || wheel >= selected.Length || IsUnlocked || State.images == null || State.images.Length == 0)
+        if (wheel < 0 || wheel >= selected.Length || IsUnlocked ||
+            State.images == null || State.images.Length == 0 ||
+            (wheel == 2 && !State.thirdWheelEnabled))
             return;
-        if (wheel == 2 && !State.thirdWheelEnabled)
-            return;
-        State.selected[wheel] = (State.selected[wheel] + direction + State.images.Length) % State.images.Length;
+
+        int imageCount = State.images.Length;
+        int nextImage = State.selected[wheel] + direction;
+        nextImage = (nextImage + imageCount) % imageCount;
+
+        State.selected[wheel] = nextImage;
         UpdateImages();
     }
 
     private void UpdateImages()
     {
         for (int i = 0; i < 3; i++)
-            wheelImages[i].texture = State.images != null && State.images.Length > 0
-                ? State.images[State.selected[i] % State.images.Length] : null;
+        {
+            if (State.images != null && State.images.Length > 0)
+            {
+                int imageIndex = State.selected[i] % State.images.Length;
+                wheelImages[i].texture = State.images[imageIndex];
+            }
+            else
+                wheelImages[i].texture = null;
+        }
     }
 
     public void TryUnlock()
     {
-        if (IsUnlocked)
-            return;
-        if (!State.thirdWheelEnabled)
-            return;
-        if (State.selected[0] != State.combination.x || State.selected[1] != State.combination.y ||
+        if (IsUnlocked || !State.thirdWheelEnabled ||
+            State.selected[0] != State.combination.x ||
+            State.selected[1] != State.combination.y ||
             State.selected[2] != State.combination.z)
             return;
+
         State.unlocked = true;
         State.SetPreviewUnlocked(true);
         SetPreviewUnlocked(true);
@@ -161,20 +240,35 @@ public class CofferLock : MonoBehaviour, IInteractable
     public bool InteractWithPreview(Ray ray)
     {
         Physics.SyncTransforms();
-        if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
-            1 << gameObject.layer, QueryTriggerInteraction.Ignore))
+
+        RaycastHit hit;
+        int layerMask = 1 << gameObject.layer;
+
+        bool hasHit = Physics.Raycast(
+            ray,
+            out hit,
+            Mathf.Infinity,
+            layerMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        if (!hasHit)
             return false;
 
-        if (!IsUnlocked && lockModel != null && hit.transform.IsChildOf(lockModel.transform))
+        if (!IsUnlocked && lockModel != null &&
+            hit.transform.IsChildOf(lockModel.transform))
         {
             SetPanelOpen(true);
             return true;
         }
-        if (IsUnlocked && !IsKeyCollected && keyModel != null && hit.transform.IsChildOf(keyModel.transform))
+
+        if (IsUnlocked && !IsKeyCollected && keyModel != null &&
+            hit.transform.IsChildOf(keyModel.transform))
         {
             CollectKey();
             return true;
         }
+
         return false;
     }
 }

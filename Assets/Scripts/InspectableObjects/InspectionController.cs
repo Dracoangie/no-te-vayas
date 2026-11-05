@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class InspectionController : MonoBehaviour
 {
+    // Displays item previews with rotation, zoom and interaction.
     public static InspectionController Instance { get; private set; }
 
     [SerializeField] private GameObject inspectionPanel;
@@ -32,7 +33,6 @@ public class InspectionController : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogError("The scene must contain only one InspectionController.", this);
             enabled = false;
             return;
         }
@@ -40,7 +40,6 @@ public class InspectionController : MonoBehaviour
         player = FindFirstObjectByType<Player>();
         if (player == null)
         {
-            Debug.LogError("The scene must contain a Player for inspection.", this);
             enabled = false;
             return;
         }
@@ -48,7 +47,6 @@ public class InspectionController : MonoBehaviour
         if (inspectionPanel == null || inspectionCamera == null ||
             inspectionImage == null || modelPivot == null)
         {
-            Debug.LogError("Assign all preview references in InspectionController.", this);
             enabled = false;
             return;
         }
@@ -72,12 +70,17 @@ public class InspectionController : MonoBehaviour
         modelPivot.rotation = inspectionCamera.transform.rotation;
         coffer = cofferLock;
         isClick = false;
+
         model = Instantiate(item.InspectionPrefab, modelPivot);
+
         if (model.TryGetComponent(out ItemDescriptionText text))
             text.SetItem(item);
+
         preview = model.GetComponent<CofferLock>();
+
         if (preview != null)
             preview.PreparePreview(coffer);
+
         model.transform.localPosition = Vector3.zero;
         model.transform.localRotation = Quaternion.Euler(item.InitialRotation);
         SetupModel();
@@ -97,8 +100,14 @@ public class InspectionController : MonoBehaviour
         foreach (Transform child in model.GetComponentsInChildren<Transform>(true))
             child.gameObject.layer = inspectionCamera.gameObject.layer;
 
-        foreach (Collider collider in model.GetComponentsInChildren<Collider>(true))
-            collider.enabled = preview != null && collider is MeshCollider;
+        foreach (Collider modelCollider in model.GetComponentsInChildren<Collider>(true))
+        {
+            if (preview != null && modelCollider is MeshCollider)
+                modelCollider.enabled = true;
+            else
+                modelCollider.enabled = false;
+        }
+
 
         foreach (Rigidbody body in model.GetComponentsInChildren<Rigidbody>(true))
         {
@@ -116,6 +125,7 @@ public class InspectionController : MonoBehaviour
 
         float scale = modelRadius / Mathf.Max(bounds.extents.magnitude, 0.001f);
         Vector3 offset = bounds.center - modelPivot.position;
+
         model.transform.localScale *= scale;
         model.transform.position = modelPivot.position - offset * scale;
     }
@@ -125,7 +135,9 @@ public class InspectionController : MonoBehaviour
         if (!isOpen)
             return;
 
-        bool lockPanelOpen = preview != null && preview.IsPanelOpen;
+        bool lockPanelOpen = false;
+        if (preview != null)
+            lockPanelOpen = preview.IsPanelOpen;
 
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
@@ -184,11 +196,15 @@ public class InspectionController : MonoBehaviour
             return false;
 
         Canvas canvas = inspectionImage.canvas;
-        Camera uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
-            ? canvas.worldCamera : null;
+        Camera uiCamera = null;
+
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                uiCamera = canvas.worldCamera;
+
         RectTransform imageRect = inspectionImage.rectTransform;
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(imageRect, screenPoint,
-            uiCamera, out Vector2 localPoint) || !imageRect.rect.Contains(localPoint))
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            imageRect, screenPoint,uiCamera, out Vector2 localPoint) 
+            || !imageRect.rect.Contains(localPoint))
             return false;
 
         Rect rect = imageRect.rect;
@@ -197,6 +213,7 @@ public class InspectionController : MonoBehaviour
             uv.x + (localPoint.x - rect.x) / rect.width * uv.width,
             uv.y + (localPoint.y - rect.y) / rect.height * uv.height);
         Ray ray = inspectionCamera.ViewportPointToRay(viewport);
+
         return preview.InteractWithPreview(ray);
     }
 
@@ -211,12 +228,15 @@ public class InspectionController : MonoBehaviour
             return;
 
         Destroy(model);
+
         coffer = null;
         preview = null;
         isClick = false;
+
         inspectionCamera.enabled = false;
         inspectionPanel.SetActive(false);
         player.SetControlsEnabled(true);
+
         isOpen = false;
     }
 

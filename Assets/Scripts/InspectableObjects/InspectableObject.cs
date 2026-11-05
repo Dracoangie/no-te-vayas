@@ -3,6 +3,7 @@ using UnityEngine.Events;
 
 public class InspectableObject : MonoBehaviour, IInteractable
 {
+    // Opens an item in the inspection viewer.
     [SerializeField] private ItemDefinition item;
     [SerializeField] private UnityEvent onInteracted = new UnityEvent();
 
