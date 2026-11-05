@@ -9,8 +9,8 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private Text dialogueLabel;
     [SerializeField, Min(0.1f)] private float fadeSpeed = 5f;
 
-    private readonly Queue<(string text, float duration)> dialogues = new Queue<(string, float)>();
-    private bool displaying;
+    private readonly Queue<(string text, float duration)> queue = new Queue<(string, float)>();
+    private bool showing;
 
     private void Awake()
     {
@@ -20,23 +20,23 @@ public class DialogueUI : MonoBehaviour
     public void ShowDialogue(string text, float duration)
     {
         if (!isActiveAndEnabled || string.IsNullOrWhiteSpace(text)) return;
-        dialogues.Enqueue((text, duration));
-        if (!displaying) StartCoroutine(DisplayDialogue());
+        queue.Enqueue((text, duration));
+        if (!showing) StartCoroutine(ShowNext());
     }
 
-    private IEnumerator DisplayDialogue()
+    private IEnumerator ShowNext()
     {
-        displaying = true;
-        while (dialogues.Count > 0)
+        showing = true;
+        while (queue.Count > 0)
         {
-            var dialogue = dialogues.Dequeue();
+            var dialogue = queue.Dequeue();
             dialogueLabel.text = dialogue.text;
             yield return Fade(1f);
             yield return new WaitForSecondsRealtime(dialogue.duration);
             yield return Fade(0f);
         }
         dialogueLabel.text = string.Empty;
-        displaying = false;
+        showing = false;
     }
 
     private IEnumerator Fade(float alpha)
@@ -51,10 +51,10 @@ public class DialogueUI : MonoBehaviour
     public void ClearDialogue()
     {
         StopAllCoroutines();
-        dialogues.Clear();
-        displaying = false;
-        if (dialogueGroup != null) dialogueGroup.alpha = 0f;
-        if (dialogueLabel != null) dialogueLabel.text = string.Empty;
+        queue.Clear();
+        showing = false;
+        dialogueGroup.alpha = 0f;
+        dialogueLabel.text = string.Empty;
     }
 
     private void OnDisable()

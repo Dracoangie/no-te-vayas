@@ -6,54 +6,48 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private Camera playerCamera;
     [SerializeField, Min(0.1f)] private float interactionDistance = 3f;
     [SerializeField] private LayerMask interactionLayers = Physics.DefaultRaycastLayers;
-    private GameObject interactionPanel;
+    private GameObject hint;
 
-    private InputAction interactionAction;
+    private InputAction interact;
     private Player player;
 
     private void Awake()
     {
-        interactionAction = InputSystem.actions.FindAction("InGame/Interaction", true);
+        interact = InputSystem.actions.FindAction("InGame/Interaction", true);
         player = GetComponent<Player>();
-
-        if (playerCamera == null)
-        {
-            Debug.LogError("Assign the player camera in PlayerInteractor.", this);
-            enabled = false;
-        }
     }
 
     private void Start()
     {
-        interactionPanel = GameObject.Find("Interaction Panel");
-        if (interactionPanel != null)
-            interactionPanel.SetActive(false);
+        hint = GameObject.Find("Interaction Panel");
+        if (hint != null)
+            hint.SetActive(false);
     }
 
     private void Update()
     {
-        IInteractable interactable = ActualizarInteraccion();
-        if (interactable != null && interactionAction.WasPressedThisFrame())
-            interactable.Interact();
+        IInteractable target = CheckTarget();
+        if (target != null && interact.WasPressedThisFrame())
+            target.Interact();
 
-        if (!player.ControlsEnabled && interactionPanel != null)
-            interactionPanel.SetActive(false);
+        if (!player.ControlsEnabled && hint != null)
+            hint.SetActive(false);
     }
 
-    private IInteractable ActualizarInteraccion()
+    private IInteractable CheckTarget()
     {
-        IInteractable interactable = null;
+        IInteractable target = null;
         if (player.ControlsEnabled && Time.timeScale > 0f)
         {
             Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
             if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance,
                 interactionLayers, QueryTriggerInteraction.Ignore))
-                interactable = hit.collider.GetComponentInParent<IInteractable>();
+                target = hit.collider.GetComponentInParent<IInteractable>();
         }
 
-        if (interactionPanel != null)
-            interactionPanel.SetActive(interactable != null);
+        if (hint != null)
+            hint.SetActive(target != null);
 
-        return interactable;
+        return target;
     }
 }
